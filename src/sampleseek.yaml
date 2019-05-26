@@ -1,0 +1,26 @@
+dbConfig:
+  url: jdbc:postgresql://localhost/pinmap
+  username: postgres
+  password: pinmap
+
+sampleConfig:
+  baseTableName: s_tweets
+  baseTableColumnNames:
+    - create_at
+    - coordinate[0]
+    - coordinate[1]
+  baseTableSize: 10256295
+  sampleTableName: ss_tweets
+  sampleTableColumnNames:
+    - create_at
+    - x
+    - y
+  sampleTableColumnTypes:
+    - timestamp
+    - double
+    - double
+
+paramConfig:
+  dimensions:
+    - create_at
+  epsilon: 0.05

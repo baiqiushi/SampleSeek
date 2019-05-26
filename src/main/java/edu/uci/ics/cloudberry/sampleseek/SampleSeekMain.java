@@ -1,17 +1,57 @@
 package edu.uci.ics.cloudberry.sampleseek;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import edu.uci.ics.cloudberry.sampleseek.util.Config;
+
+import java.io.File;
+import java.io.IOException;
+
 public class SampleSeekMain {
 
-    public final static String tableName = "tweets";
-    public final static String[] dimensions = {"create_at"};
-    public final static String sampleName = "s_tweets";
-    public final static double epsilon = 0.05;
-    public final static int cardinality = 10256295;
+    public static Config config = null;
 
+    public static Config loadConfig(String configFilePath) throws IOException {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        Config config = mapper.readValue(new File(configFilePath), Config.class);
+        return config;
+    }
 
     public static void main(String[] args) {
-
         boolean success = false;
+
+
+        // parse arguments
+        String configFilePath = null;
+        for (int i = 0; i < args.length; i ++) {
+            switch (args[i].toLowerCase()) {
+                case "--config" :
+                case "-c" :
+                    try {
+                        configFilePath = args[i + 1];
+                    }
+                    catch (ArrayIndexOutOfBoundsException e) {
+                        System.err.println("Config file path should follow -c [--config].");
+                        return;
+                    }
+            }
+        }
+
+        if (configFilePath == null) {
+            System.err.println("Please indicate config file path.\nUsage: --config [file] or -c [file].\n");
+            //return;
+            System.err.println("Use default config file path: ./src/sampleseek.yaml\n");
+            configFilePath = "/Users/white/IdeaProjects/sampleseek/src/sampleseek.yaml";
+        }
+
+        // load config file
+        try {
+            config = loadConfig(configFilePath);
+        } catch (IOException e) {
+            System.err.println("Config file: [" + configFilePath + "] does not exist.");
+            e.printStackTrace();
+            return;
+        }
 
         SampleManager sampleManager = new SampleManager();
 
