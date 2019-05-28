@@ -131,23 +131,50 @@ public class Config {
         }
     }
 
-    public class ParamConfig {
+    public class SeekConfig {
+        private String pkey;
+        private String[] measures;
         private String[] dimensions;
+        private DimensionType[] dimensionTypes;
         private double epsilon;
 
-        public ParamConfig() {
+        public SeekConfig() {
+        }
+
+        public void setPkey(String pkey) {
+            this.pkey = pkey;
+        }
+
+        public void setMeasures(String[] measures) {
+            this.measures = measures;
         }
 
         public void setDimensions(String[] dimensions) {
             this.dimensions = dimensions;
         }
 
+        public void setDimensionTypes(DimensionType[] dimensionTypes) {
+            this.dimensionTypes = dimensionTypes;
+        }
+
         public void setEpsilon(double epsilon) {
             this.epsilon = epsilon;
         }
 
+        public String getPkey() {
+            return pkey;
+        }
+
+        public String[] getMeasures() {
+            return measures;
+        }
+
         public String[] getDimensions() {
             return dimensions;
+        }
+
+        public DimensionType[] getDimensionTypes() {
+            return dimensionTypes;
         }
 
         public double getEpsilon() {
@@ -158,7 +185,7 @@ public class Config {
     private Map<String, String> serverConfig;
     private DBConfig dbConfig;
     private SampleConfig sampleConfig;
-    private ParamConfig paramConfig;
+    private SeekConfig seekConfig;
 
     public Config() {
     }
@@ -175,8 +202,8 @@ public class Config {
         this.sampleConfig = sampleConfig;
     }
 
-    public void setParamConfig(ParamConfig paramConfig) {
-        this.paramConfig = paramConfig;
+    public void setSeekConfig(SeekConfig seekConfig) {
+        this.seekConfig = seekConfig;
     }
 
     public Map<String, String> getServerConfig() {
@@ -191,7 +218,9 @@ public class Config {
         return sampleConfig;
     }
 
-    public ParamConfig getParamConfig() {
-        return paramConfig;
+    public SeekConfig getSeekConfig() {
+        return seekConfig;
     }
 }
+
+

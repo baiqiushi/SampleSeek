@@ -3,8 +3,8 @@
 
 ## Current support
  - Restful API for query submission
- - Uniform sampling based queries
- - Non-group-by queries
+ - Uniform sampling based queries (COUNT, no SUM for now)
+ - Non-group-by queries (Will support group-by queries soon)
  - Configuarable base table and sample table schemas
  
 ## Run the system
@@ -50,7 +50,7 @@ curl -H "Content-Type: application/json" -X POST -d '{"select": ["x", "y"], "fil
 ```json
 {
 "groupBy": ["attributeName1", "attributeName2", ...],
-"aggFunction": "SUM/COUNT",
+"aggFunction": "COUNT",
 "aggAttribute": "attributeName",
 "filters": [
   {"attribute": "attributeName", "operator": "IN/LT/GT/EQUAL", "operands": ["left-value", "right-value"]}, // operands list has 2 values only when operator is "IN", otherwise has only 1 value

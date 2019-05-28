@@ -11,9 +11,6 @@ public class SampleManager {
 
     private final String separator = " | ";
     private final int outputSize = 10;
-    private String url = null;
-    private String username = null;
-    private String password = null;
 
     private String baseTableName = null;
     private String[] baseTableColumnNames = null;
@@ -22,17 +19,13 @@ public class SampleManager {
     private String[] sampleTableColumnTypes = null;
     private Class[] sampleTableColumnClasses = null;
 
+    private int baseTableSize = 0;
     private int sampleTableSize = 10;
 
 
-    private Connection conn = null;
-    private Map<String, Object> sample = new HashMap<String, Object>();
+    private Map<String, Object> sample = new HashMap<>();
 
     public SampleManager() {
-
-        this.url = SampleSeekMain.config.getDbConfig().getUrl();
-        this.username = SampleSeekMain.config.getDbConfig().getUsername();
-        this.password = SampleSeekMain.config.getDbConfig().getPassword();
 
         this.baseTableName = SampleSeekMain.config.getSampleConfig().getBaseTableName();
         this.baseTableColumnNames = SampleSeekMain.config.getSampleConfig().getBaseTableColumnNames();
@@ -41,10 +34,11 @@ public class SampleManager {
         this.sampleTableColumnTypes = SampleSeekMain.config.getSampleConfig().getSampleTableColumnTypes();
         this.sampleTableColumnClasses = SampleSeekMain.config.getSampleConfig().getSampleTalbeColumnClasses();
 
+        this.baseTableSize = SampleSeekMain.config.getSampleConfig().getBaseTableSize();
+
         // sample size = sqrt(n) / epsilon^2
-        this.sampleTableSize = (int) Math.round(
-                Math.sqrt(SampleSeekMain.config.getSampleConfig().getBaseTableSize()) /
-                        Math.pow(SampleSeekMain.config.getParamConfig().getEpsilon(), 2)
+        this.sampleTableSize = (int) Math.round(Math.sqrt(baseTableSize) /
+                        Math.pow(SampleSeekMain.config.getSeekConfig().getEpsilon(), 2)
         );
 
         // initialize the sample data structure
@@ -52,8 +46,6 @@ public class SampleManager {
             String name = this.sampleTableColumnNames[i];
             this.sample.put(name, Array.newInstance(this.sampleTableColumnClasses[i], this.sampleTableSize));
         }
-        // connect to database
-        this.connect();
     }
 
     public boolean generateSample() {
@@ -76,11 +68,11 @@ public class SampleManager {
                 "    ) r\n" +
                 "JOIN   t USING (rn)";
 
-        System.out.println("Use the following SQL to generate sample with size: " + this.sampleTableSize);
-        System.out.println(sql);
+        System.out.println("Generating sample with size: " + this.sampleTableSize + " ... ...");
+        System.out.println("SQL: " + sql);
 
         try {
-            PreparedStatement statement = this.conn.prepareStatement(sql);
+            PreparedStatement statement = SampleSeekMain.conn.prepareStatement(sql);
             statement.setInt(1, this.sampleTableSize);
             statement.executeUpdate();
             statement.close();
@@ -98,7 +90,7 @@ public class SampleManager {
         String sql = "SELECT 1 FROM " + this.sampleTableName + " LIMIT 1";
 
         try {
-            PreparedStatement statement = this.conn.prepareStatement(sql);
+            PreparedStatement statement = SampleSeekMain.conn.prepareStatement(sql);
             ResultSet rs = statement.executeQuery();
             if (rs.next()) {
                 exist = true;
@@ -124,7 +116,7 @@ public class SampleManager {
         System.out.println("SQL: " + sql);
 
         try {
-            PreparedStatement statement = this.conn.prepareStatement(sql);
+            PreparedStatement statement = SampleSeekMain.conn.prepareStatement(sql);
             ResultSet rs = statement.executeQuery();
             int rsId = 0;
             while (rs.next()) {
@@ -166,15 +158,6 @@ public class SampleManager {
         }
     }
 
-    public void connect() {
-        try {
-            this.conn = DriverManager.getConnection(this.url, this.username, this.password);
-            System.out.println("Connected to the PostgreSQL server successfully.");
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-        }
-    }
-
     public String getSampleTableName() {
         return sampleTableName;
     }
@@ -193,6 +176,10 @@ public class SampleManager {
 
     public int getSampleTableSize() {
         return sampleTableSize;
+    }
+
+    public int getBaseTableSize() {
+        return baseTableSize;
     }
 
     public Map<String, Object> getSample() {

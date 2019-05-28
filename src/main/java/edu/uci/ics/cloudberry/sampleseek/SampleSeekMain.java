@@ -17,29 +17,58 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import edu.uci.ics.cloudberry.sampleseek.core.QueryExecutor;
 import edu.uci.ics.cloudberry.sampleseek.core.SampleManager;
+import edu.uci.ics.cloudberry.sampleseek.core.SeekManager;
 import edu.uci.ics.cloudberry.sampleseek.model.Query;
 import edu.uci.ics.cloudberry.sampleseek.util.Config;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 public class SampleSeekMain extends AllDirectives {
 
     public static Config config = null;
-    public static SampleManager sampleManager = null;
-    public static QueryExecutor queryExecutor = null;
+    public static Connection conn = null;
+    public SampleManager sampleManager;
+    public SeekManager seekManager;
+    public QueryExecutor queryExecutor;
 
     public SampleSeekMain () {
         sampleManager = new SampleManager();
-        queryExecutor = new QueryExecutor(sampleManager);
+        seekManager = new SeekManager();
+        queryExecutor = new QueryExecutor(sampleManager, seekManager);
     }
 
     public static Config loadConfig(String configFilePath) throws IOException {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         Config config = mapper.readValue(new File(configFilePath), Config.class);
         return config;
+    }
+
+    public static boolean connectDB() {
+        try {
+            conn = DriverManager.getConnection(config.getDbConfig().getUrl(),
+                    config.getDbConfig().getUsername(), config.getDbConfig().getPassword());
+            System.out.println("Connected to the PostgreSQL server successfully.");
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Connecting to the PostgreSQL server failed. Exceptions:");
+            System.err.println(e.getMessage());
+            return false;
+        }
+    }
+
+    public static void disconnectDB() {
+        try {
+            conn.close();
+            System.out.println("Disconnected from the PostgreSQL server successfully.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public void initialize() {
@@ -77,6 +106,14 @@ public class SampleSeekMain extends AllDirectives {
 
         System.out.println("=== Sample loaded ===");
         sampleManager.printSample();
+
+        // build indexes on base table
+        System.out.println("=== Building indexes on base table ===");
+        start = System.currentTimeMillis();
+        int successCount = seekManager.buildIndexes();
+        end = System.currentTimeMillis();
+        System.out.println("# of indexes built : " + successCount);
+        System.out.println("time: " + String.format("%.3f", (end - start)/1000.0) + " seconds");
     }
 
     public void test() {
@@ -134,6 +171,13 @@ public class SampleSeekMain extends AllDirectives {
             return;
         }
 
+        // connect to database
+        boolean ok = connectDB();
+        if (!ok) {
+            System.err.println("Cannot connect to database, exit.");
+            return;
+        }
+
         // initialize HTTP server
         String hostname = config.getServerConfig().getOrDefault("hostname", "localhost");
         int port = Integer.valueOf(config.getServerConfig().getOrDefault("port", "8080"));
@@ -159,10 +203,12 @@ public class SampleSeekMain extends AllDirectives {
         System.out.println("Server online at " + serverUrl);
         System.out.println("Query url: " + queryUrl);
         System.out.println("POST http request to query result: e.g. ");
-        String sampleQueryJson = "{\"select\": [\"x\", \"y\"], \"filters\": [{\"attribute\": \"create_at\", \"operator\": \"IN\", \"operands\": [\"2017-06-01 00:00:00\", \"2017-07-01 00:00:00\"]}]}";
+        String sampleQueryJson = "{\"select\": [\"x\", \"y\", \"create_at\"], \"filters\": [{\"attribute\": \"create_at\", \"operator\": \"IN\", \"operands\": [\"2017-06-01 00:00:00\", \"2017-07-01 00:00:00\"]}]}";
         System.out.println("curl -H \"Content-Type: application/json\" -X POST -d '" + sampleQueryJson + "' " + queryUrl);
         System.out.println("\nPress RETURN to stop...");
         System.in.read(); // let it run until user presses return
+
+        disconnectDB();
 
         binding
                 .thenCompose(ServerBinding::unbind) // trigger unbinding from the port

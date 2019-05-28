@@ -73,7 +73,7 @@ public class Query {
             sb.append(filter.getOperator() + " ");
             sb.append("\"" + String.join("\" AND \"", filter.getOperands()) + "\"]\n");
         }
-        sb.append("***** ----- *****\\n");
+        sb.append("***** ----- *****\n");
         return sb.toString();
     }
 }
