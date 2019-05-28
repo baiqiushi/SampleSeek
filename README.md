@@ -74,22 +74,33 @@ dbConfig:
 sampleConfig:
   baseTableName: tweets1 =
   baseTableColumnNames:
+    - id
     - create_at
     - x # if base table uses [Point] datatype, here could use "coordinate[0]"
     - y # if base table uses [Point] datatype, here could use "coordinate[1]"
   baseTableSize: 1026036 # the number of records in base table
   sampleTableName: s_tweets1 # the table name for the sample, which will be generated when server starts
   sampleTableColumnNames: # list of columns' names in the sample table, *must be in the same order with base table
+    - id
     - create_at
     - x
     - y
   sampleTableColumnTypes: # type of each column in sample table, *must be in the same order with column names
+    - bigint
     - timestamp # the data types supported are: number, int, integer, bigint, timestamp, double, string
     - double
     - double
 
-paramConfig:
+seekConfig:
+  pkey: id
+  measures:
+    - x
+    - y
   dimensions: # names of columns that can be group-by on or filter on
+    - id
     - create_at
-  epsilon: 0.05 # epsilon - error bound for approximate query result
+  dimensionTypes:
+    - NUMERICAL
+    - NUMERICAL
+  epsilon: 0.05 # epsilon - error bound for approximate query result, ** whenever update this value, you need to drop the sample table manually 
 ```
