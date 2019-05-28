@@ -1,4 +1,6 @@
-package edu.uci.ics.cloudberry.sampleseek;
+package edu.uci.ics.cloudberry.sampleseek.core;
+
+import edu.uci.ics.cloudberry.sampleseek.SampleSeekMain;
 
 import java.lang.reflect.Array;
 import java.sql.*;
@@ -8,6 +10,7 @@ import java.util.Map;
 public class SampleManager {
 
     private final String separator = " | ";
+    private final int outputSize = 10;
     private String url = null;
     private String username = null;
     private String password = null;
@@ -19,7 +22,7 @@ public class SampleManager {
     private String[] sampleTableColumnTypes = null;
     private Class[] sampleTableColumnClasses = null;
 
-    private final int size = 10;
+    private int sampleTableSize = 10;
 
 
     private Connection conn = null;
@@ -38,10 +41,16 @@ public class SampleManager {
         this.sampleTableColumnTypes = SampleSeekMain.config.getSampleConfig().getSampleTableColumnTypes();
         this.sampleTableColumnClasses = SampleSeekMain.config.getSampleConfig().getSampleTalbeColumnClasses();
 
+        // sample size = sqrt(n) / epsilon^2
+        this.sampleTableSize = (int) Math.round(
+                Math.sqrt(SampleSeekMain.config.getSampleConfig().getBaseTableSize()) /
+                        Math.pow(SampleSeekMain.config.getParamConfig().getEpsilon(), 2)
+        );
+
         // initialize the sample data structure
         for (int i = 0; i < this.sampleTableColumnNames.length; i ++) {
             String name = this.sampleTableColumnNames[i];
-            this.sample.put(name, Array.newInstance(this.sampleTableColumnClasses[i], this.size));
+            this.sample.put(name, Array.newInstance(this.sampleTableColumnClasses[i], this.sampleTableSize));
         }
         // connect to database
         this.connect();
@@ -67,9 +76,12 @@ public class SampleManager {
                 "    ) r\n" +
                 "JOIN   t USING (rn)";
 
+        System.out.println("Use the following SQL to generate sample with size: " + this.sampleTableSize);
+        System.out.println(sql);
+
         try {
             PreparedStatement statement = this.conn.prepareStatement(sql);
-            statement.setInt(1, this.size);
+            statement.setInt(1, this.sampleTableSize);
             statement.executeUpdate();
             statement.close();
 
@@ -123,6 +135,13 @@ public class SampleManager {
                 }
                 rsId ++;
             }
+
+            if (rsId < this.sampleTableSize) {
+                System.err.println("\n[Warning] The real size [" + rsId +
+                        "] of sample table in DB is smaller than the size [" + this.sampleTableSize +
+                        "] calculated using epsilon. We will use the real size.");
+                this.sampleTableSize = rsId;
+            }
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
@@ -132,7 +151,7 @@ public class SampleManager {
 
     public void printSample() {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < this.size; i ++) {
+        for (int i = 0; i < Math.min(outputSize, this.sampleTableSize); i ++) {
             sb.setLength(0);
             sb.append(i);
             for (int j = 0; j < this.sampleTableColumnNames.length; j ++) {
@@ -140,6 +159,10 @@ public class SampleManager {
                 sb.append(Array.get(this.sample.get(this.sampleTableColumnNames[j]), i));
             }
             System.out.println(sb.toString());
+        }
+        if (outputSize < this.sampleTableSize) {
+            System.out.println("... ...");
+            System.out.println("(total " + this.sampleTableSize + " lines)");
         }
     }
 
@@ -150,5 +173,38 @@ public class SampleManager {
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
+    }
+
+    public String getSampleTableName() {
+        return sampleTableName;
+    }
+
+    public String[] getSampleTableColumnNames() {
+        return sampleTableColumnNames;
+    }
+
+    public String[] getSampleTableColumnTypes() {
+        return sampleTableColumnTypes;
+    }
+
+    public Class[] getSampleTableColumnClasses() {
+        return sampleTableColumnClasses;
+    }
+
+    public int getSampleTableSize() {
+        return sampleTableSize;
+    }
+
+    public Map<String, Object> getSample() {
+        return sample;
+    }
+
+    public String getSampleTableColumnType(String columnName) {
+        for (int i = 0; i < sampleTableColumnNames.length; i ++ ) {
+            if (sampleTableColumnNames[i].equalsIgnoreCase(columnName)) {
+                return sampleTableColumnTypes[i];
+            }
+        }
+        return null;
     }
 }

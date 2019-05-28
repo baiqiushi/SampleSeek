@@ -1,6 +1,7 @@
 package edu.uci.ics.cloudberry.sampleseek.util;
 
 import java.sql.Timestamp;
+import java.util.Map;
 
 public class Config {
 
@@ -75,6 +76,11 @@ public class Config {
             for (int i = 0; i < this.sampleTableColumnTypes.length; i ++) {
                 Class colClass = null;
                 switch (this.sampleTableColumnTypes[i].toLowerCase()) {
+                    case "int":
+                    case "integer":
+                    case "number":
+                        colClass = Integer.class;
+                        break;
                     case "bigint":
                         colClass = Long.class;
                         break;
@@ -149,11 +155,16 @@ public class Config {
         }
     }
 
+    private Map<String, String> serverConfig;
     private DBConfig dbConfig;
     private SampleConfig sampleConfig;
     private ParamConfig paramConfig;
 
     public Config() {
+    }
+
+    public void setServerConfig(Map<String, String> serverConfig) {
+        this.serverConfig = serverConfig;
     }
 
     public void setDbConfig(DBConfig dbConfig) {
@@ -166,6 +177,10 @@ public class Config {
 
     public void setParamConfig(ParamConfig paramConfig) {
         this.paramConfig = paramConfig;
+    }
+
+    public Map<String, String> getServerConfig() {
+        return serverConfig;
     }
 
     public DBConfig getDbConfig() {
