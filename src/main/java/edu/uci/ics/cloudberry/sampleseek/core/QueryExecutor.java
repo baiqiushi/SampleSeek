@@ -273,12 +273,12 @@ public class QueryExecutor {
                     switch (operator) {
                         case IN:
                             hit = new ExpressionEvaluator<Integer>()
-                                    .evaluateDoubleOperand(Array.getInt(columnStore, i),
+                                    .evaluateDoubleOperand((Integer) Array.get(columnStore, i),
                                             operator, Integer.valueOf(operands[0]), Integer.valueOf(operands[1]));
                             break;
                         default:
                             hit = new ExpressionEvaluator<Integer>()
-                                    .evaluateSingleOperand(Array.getInt(columnStore, i),
+                                    .evaluateSingleOperand((Integer) Array.get(columnStore, i),
                                             operator, Integer.valueOf(operands[0]));
                     }
                     break;
@@ -286,12 +286,12 @@ public class QueryExecutor {
                     switch (operator) {
                         case IN:
                             hit = new ExpressionEvaluator<Long>()
-                                    .evaluateDoubleOperand(Array.getLong(columnStore, i),
+                                    .evaluateDoubleOperand((Long) Array.get(columnStore, i),
                                             operator, Long.valueOf(operands[0]), Long.valueOf(operands[1]));
                             break;
                         default:
                             hit = new ExpressionEvaluator<Long>()
-                                    .evaluateSingleOperand(Array.getLong(columnStore, i),
+                                    .evaluateSingleOperand((Long) Array.get(columnStore, i),
                                             operator, Long.valueOf(operands[0]));
                     }
                     break;
@@ -299,12 +299,12 @@ public class QueryExecutor {
                     switch (operator) {
                         case IN:
                             hit = new ExpressionEvaluator<Double>()
-                                    .evaluateDoubleOperand(Array.getDouble(columnStore, i),
+                                    .evaluateDoubleOperand((Double) Array.get(columnStore, i),
                                             operator, Double.valueOf(operands[0]), Double.valueOf(operands[1]));
                             break;
                         default:
                             hit = new ExpressionEvaluator<Double>()
-                                    .evaluateSingleOperand(Array.getDouble(columnStore, i),
+                                    .evaluateSingleOperand((Double) Array.get(columnStore, i),
                                             operator, Double.valueOf(operands[0]));
                     }
                     break;
