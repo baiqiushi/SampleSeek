@@ -136,6 +136,14 @@ public class QueryExecutor {
         return result;
     }
 
+    public JsonNode transferQuery(Query query) {
+
+        System.out.println("Transferring query: \n" + query);
+        JsonNode result = queryDBForOriginalQuery(query);
+
+        return result;
+    }
+
     private int countOfQueryResults(Query query) {
         // TODO - Currently ignore the case when a small query's result size >= threshold 1/epsilon^2,
         //        to implement this, we need to get the count from SeekManager.
