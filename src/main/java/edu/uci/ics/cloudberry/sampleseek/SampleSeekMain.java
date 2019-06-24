@@ -225,11 +225,23 @@ public class SampleSeekMain extends AllDirectives {
                                     return onSuccess(futureResult, result ->
                                             completeOK(result, Jackson.marshaller())
                                     );
+                                }))),
+                post(() ->
+                        path("transfer", () ->
+                                entity(Jackson.unmarshaller(Query.class), query -> {
+                                    CompletionStage<JsonNode> futureResult = transferQuery(query);
+                                    return onSuccess(futureResult, result ->
+                                            completeOK(result, Jackson.marshaller())
+                                    );
                                 })))
         );
     }
 
     private CompletionStage<JsonNode> executeQuery(final Query query) {
         return CompletableFuture.completedFuture(queryExecutor.executeQuery(query));
+    }
+
+    private CompletionStage<JsonNode> transferQuery(final Query query) {
+        return CompletableFuture.completedFuture(queryExecutor.transferQuery(query));
     }
 }
