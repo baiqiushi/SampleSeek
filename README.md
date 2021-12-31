@@ -1,5 +1,5 @@
 # Java implementation of Sample+Seek*
-* *[Sample+Seek is a system published by Bolin Ding, etc. @Microsoft in SIMOD 2016](https://www.microsoft.com/en-us/research/publication/sample-seek-approximating-aggregates-with-distribution-precision-guarantee/)
+* *[Sample+Seek is a system published by Bolin Ding, etc. @Microsoft in SIGMOD 2016](https://www.microsoft.com/en-us/research/publication/sample-seek-approximating-aggregates-with-distribution-precision-guarantee/)
 
 ## Current support
  - Restful API for query submission
